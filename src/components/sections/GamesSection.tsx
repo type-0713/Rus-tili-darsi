@@ -5,7 +5,8 @@ import {
   RotateCcw,
   Volume2,
   Clock,
-  ArrowRight
+  ArrowRight,
+  HelpCircle
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useAudio } from '../../context/AudioContext';
@@ -35,8 +36,13 @@ export const GamesSection: React.FC = () => {
     { id: 7, nameRu: '7. Битва знаний', nameUz: '60s viktorina' }
   ];
 
+  const goToNextGame = () => {
+    setActiveGameId((prev) => (prev < 7 ? prev + 1 : 1));
+    window.scrollTo({ top: 300, behavior: 'smooth' });
+  };
+
   // ==========================================
-  // GAME 1: НАЙДИ ПЕРЕВОД (Match pairs - Fixed & Polished)
+  // GAME 1: НАЙДИ ПЕРЕВОД (Match pairs)
   // ==========================================
   const Game1MatchPairs = () => {
     interface CardItem {
@@ -87,10 +93,9 @@ export const GamesSection: React.FC = () => {
     }, []);
 
     const handleCardClick = (card: CardItem) => {
-      if (firstCard && secondCard) return; // Wait for flip back
+      if (firstCard && secondCard) return;
       if (matchedPairIds.includes(card.pairId)) return;
       
-      // If user clicks the exact same first card, deselect it
       if (firstCard && firstCard.uniqueKey === card.uniqueKey) {
         setFirstCard(null);
         return;
@@ -106,11 +111,9 @@ export const GamesSection: React.FC = () => {
         return;
       }
 
-      // Second card chosen
       setSecondCard(card);
 
       if (firstCard.pairId === card.pairId && firstCard.lang !== card.lang) {
-        // MATCH!
         const nextMatched = [...matchedPairIds, card.pairId];
         setMatchedPairIds(nextMatched);
         setScore((prev) => prev + 15);
@@ -119,16 +122,15 @@ export const GamesSection: React.FC = () => {
 
         if (nextMatched.length === 6) {
           setIsWon(true);
-          addXP(25, 'game1-won', true);
+          addXP(30, 'game1-won', true);
         }
       } else {
-        // MISMATCH - show red and reset
         setWrongPairKeys([firstCard.uniqueKey, card.uniqueKey]);
         setTimeout(() => {
           setFirstCard(null);
           setSecondCard(null);
           setWrongPairKeys([]);
-        }, 800);
+        }, 750);
       }
     };
 
@@ -136,11 +138,11 @@ export const GamesSection: React.FC = () => {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <p className="text-xs sm:text-sm text-slate-700 font-medium">
-            Ruscha so‘z va uning o‘zbekcha tarjimasini juftlab toping:
+            Ruscha so‘z va uning o‘zbekcha tarjimasini bosib, juftlikni toping (Topildi: {matchedPairIds.length} / 6):
           </p>
           <div className="flex items-center gap-3">
             <span className="text-xs font-mono font-bold text-amber-900 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200">
-              Ball: {score}
+              Ball: {score} XP
             </span>
             <button
               onClick={initGame}
@@ -153,16 +155,29 @@ export const GamesSection: React.FC = () => {
         </div>
 
         {isWon ? (
-          <div className="p-8 rounded-3xl bg-emerald-50 border border-emerald-200 text-center space-y-4">
-            <Trophy className="w-12 h-12 text-emerald-600 mx-auto animate-bounce" />
-            <h3 className="text-xl font-bold text-emerald-950">Ajoyib! Barcha 6 ta juftlik topildi!</h3>
-            <p className="text-xs text-emerald-800 font-semibold">+25 XP hisobingizga qo‘shildi!</p>
-            <button
-              onClick={initGame}
-              className="px-6 py-2.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm"
-            >
-              Yangi juftliklar bilan o‘ynash
-            </button>
+          <div className="p-8 rounded-3xl bg-emerald-50 border-2 border-emerald-300 text-center space-y-4">
+            <Trophy className="w-14 h-14 text-emerald-600 mx-auto animate-bounce" />
+            <h3 className="text-xl sm:text-2xl font-black text-emerald-950">
+              Ajoyib! Barcha 6 ta juftlik to‘g‘ri topildi!
+            </h3>
+            <p className="text-xs sm:text-sm text-emerald-800 font-semibold">
+              +30 XP hisobingizga muvaffaqiyatli qo‘shildi!
+            </p>
+            <div className="flex justify-center gap-3 pt-2">
+              <button
+                onClick={initGame}
+                className="px-6 py-2.5 rounded-xl text-xs font-bold bg-white text-slate-800 border border-slate-300 hover:bg-slate-50"
+              >
+                Yangi so‘zlar bilan o‘ynash
+              </button>
+              <button
+                onClick={goToNextGame}
+                className="px-6 py-2.5 rounded-xl text-xs font-bold bg-purple-600 hover:bg-purple-500 text-white shadow-sm flex items-center gap-1.5"
+              >
+                <span>2-o‘yinga o‘tish</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
@@ -173,16 +188,16 @@ export const GamesSection: React.FC = () => {
                 (secondCard && secondCard.uniqueKey === c.uniqueKey);
               const isWrong = wrongPairKeys.includes(c.uniqueKey);
 
-              let style = 'bg-white border-slate-200/90 hover:border-purple-300 text-slate-800 hover:shadow-sm';
+              let style = 'bg-white border-slate-200 hover:border-purple-300 text-slate-800 hover:shadow-sm';
 
               if (isSelected) {
                 style = 'bg-purple-50 border-purple-500 text-purple-900 font-bold shadow-md scale-105';
               }
               if (isWrong) {
-                style = 'bg-red-50 border-red-400 text-red-900 animate-shake';
+                style = 'bg-red-50 border-red-400 text-red-900 animate-pulse';
               }
               if (isMatched) {
-                style = 'bg-emerald-50 border-emerald-200 text-emerald-800 font-semibold opacity-70 pointer-events-none';
+                style = 'bg-emerald-50 border-emerald-300 text-emerald-800 font-semibold opacity-70 pointer-events-none';
               }
 
               return (
@@ -202,7 +217,7 @@ export const GamesSection: React.FC = () => {
   };
 
   // ==========================================
-  // GAME 2: СОБЕРИ ПРЕДЛОЖЕНИЕ (Sentence builder - Fixed token IDs)
+  // GAME 2: СОБЕРИ ПРЕДЛОЖЕНИЕ (Sentence builder)
   // ==========================================
   const Game2SentenceBuilder = () => {
     interface WordToken {
@@ -214,7 +229,11 @@ export const GamesSection: React.FC = () => {
     const [selectedTokens, setSelectedTokens] = useState<WordToken[]>([]);
     const [poolTokens, setPoolTokens] = useState<WordToken[]>([]);
     const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
+    const [showHint, setShowHint] = useState<boolean>(false);
+    const [solvedCount, setSolvedCount] = useState<number>(0);
+    const [isGameCompleted, setIsGameCompleted] = useState<boolean>(false);
 
+    const totalPuzzles = SENTENCE_PUZZLES.length;
     const currentPuzzle = SENTENCE_PUZZLES[puzzleIdx] || SENTENCE_PUZZLES[0];
 
     const loadPuzzle = (idx: number) => {
@@ -226,6 +245,7 @@ export const GamesSection: React.FC = () => {
       setPoolTokens([...tokens].sort(() => 0.5 - Math.random()));
       setSelectedTokens([]);
       setIsCorrect(null);
+      setShowHint(false);
     };
 
     useEffect(() => {
@@ -255,7 +275,8 @@ export const GamesSection: React.FC = () => {
 
       if (isMatch) {
         setIsCorrect(true);
-        addXP(15, `game2-${currentPuzzle.id}`, true);
+        setSolvedCount((prev) => prev + 1);
+        addXP(20, `game2-${currentPuzzle.id}`, true);
         speak(currentPuzzle.targetSentenceRu);
       } else {
         setIsCorrect(false);
@@ -263,24 +284,75 @@ export const GamesSection: React.FC = () => {
     };
 
     const handleNext = () => {
-      setPuzzleIdx((prev) => (prev + 1) % SENTENCE_PUZZLES.length);
+      if (puzzleIdx + 1 >= totalPuzzles) {
+        setIsGameCompleted(true);
+      } else {
+        setPuzzleIdx((prev) => prev + 1);
+      }
     };
+
+    const handleRestartAll = () => {
+      setPuzzleIdx(0);
+      setSolvedCount(0);
+      setIsGameCompleted(false);
+      loadPuzzle(0);
+    };
+
+    if (isGameCompleted) {
+      return (
+        <div className="p-8 rounded-3xl bg-emerald-50 border-2 border-emerald-300 text-center space-y-4">
+          <Trophy className="w-14 h-14 text-emerald-600 mx-auto animate-bounce" />
+          <h3 className="text-2xl font-black text-emerald-950">
+            Tabriklaymiz! Barcha {totalPuzzles} ta gap muvaffaqiyatli yig‘ildi!
+          </h3>
+          <p className="text-sm text-emerald-800 font-semibold">
+            Siz rus tilida gap tuzish, so‘zlar tartibi va «чтобы» birikmalarini a’lo darajada o‘zlashtirdingiz!
+          </p>
+          <div className="flex justify-center gap-3 pt-2">
+            <button
+              onClick={handleRestartAll}
+              className="px-6 py-2.5 rounded-xl text-xs font-bold bg-white text-slate-800 border border-slate-300 hover:bg-slate-50"
+            >
+              Boshidan o‘ynash
+            </button>
+            <button
+              onClick={goToNextGame}
+              className="px-6 py-2.5 rounded-xl text-xs font-bold bg-purple-600 hover:bg-purple-500 text-white shadow-sm flex items-center gap-1.5"
+            >
+              <span>3-o‘yinga o‘tish</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      );
+    }
 
     return (
       <div className="space-y-6 text-left">
-        <div className="p-4 rounded-2xl bg-purple-50/70 border border-purple-200">
+        {/* Progress header */}
+        <div className="flex items-center justify-between text-xs text-slate-600">
+          <span className="font-bold bg-purple-100 text-purple-800 px-2.5 py-1 rounded-lg">
+            Gap {puzzleIdx + 1} / {totalPuzzles}
+          </span>
+          <span className="font-semibold text-slate-700">
+            Muvaffaqiyatli: {solvedCount} / {totalPuzzles}
+          </span>
+        </div>
+
+        {/* Translation Banner */}
+        <div className="p-4 rounded-2xl bg-purple-50/80 border border-purple-200">
           <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 uppercase tracking-wider">
-            O‘zbekcha tarjimasi:
+            O‘zbekcha ma’nosi:
           </span>
           <h3 className="text-base sm:text-lg font-bold text-slate-900 mt-1">
             «{currentPuzzle.translationUz}»
           </h3>
         </div>
 
-        {/* Selected Words Area (Sentence placeholder) */}
+        {/* Selected Words Area */}
         <div className="min-h-[75px] p-4 rounded-2xl bg-white border-2 border-dashed border-purple-200 flex flex-wrap items-center gap-2">
           {selectedTokens.length === 0 ? (
-            <span className="text-xs text-slate-600">
+            <span className="text-xs text-slate-500">
               Quyidagi aralashgan so‘zlarni ketma-ket bosib, to‘g‘ri gapni yig‘ing...
             </span>
           ) : (
@@ -297,7 +369,7 @@ export const GamesSection: React.FC = () => {
           )}
         </div>
 
-        {/* Pool of Scrambled Words */}
+        {/* Pool of Words */}
         <div className="space-y-2">
           <span className="text-xs font-bold text-slate-700">Mavjud so‘zlar:</span>
           <div className="flex flex-wrap items-center gap-2">
@@ -320,19 +392,35 @@ export const GamesSection: React.FC = () => {
               isCorrect ? 'bg-emerald-50 border-emerald-300 text-emerald-900' : 'bg-red-50 border-red-300 text-red-900'
             }`}
           >
-            {isCorrect ? '✓ To‘g‘ri! Gap to‘liq va savodli tuzildi (+15 XP)!' : '✕ Noto‘g‘ri tartib! So‘zlarni qayta terib ko‘ring.'}
+            {isCorrect ? '✓ To‘g‘ri! Gap to‘liq va savodli tuzildi (+20 XP)!' : '✕ Noto‘g‘ri tartib! So‘zlarni qayta terib ko‘ring yoki yordam oling.'}
           </div>
         )}
 
-        {/* Actions */}
-        <div className="flex items-center justify-between pt-2">
-          <button
-            onClick={() => loadPuzzle(puzzleIdx)}
-            className="flex items-center gap-1 px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-            <span>Qayta tozalash</span>
-          </button>
+        {/* Hint Box */}
+        {showHint && (
+          <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900">
+            <span className="font-bold">Maslahat:</span> To‘g‘ri gap namunasi: «{currentPuzzle.targetSentenceRu}»
+          </div>
+        )}
+
+        {/* Action Controls */}
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-2">
+          <div className="flex gap-2">
+            <button
+              onClick={() => loadPuzzle(puzzleIdx)}
+              className="flex items-center gap-1 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>Qayta tozalash</span>
+            </button>
+            <button
+              onClick={() => setShowHint(true)}
+              className="flex items-center gap-1 px-3.5 py-2 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs font-semibold"
+            >
+              <HelpCircle className="w-3.5 h-3.5" />
+              <span>Maslahat</span>
+            </button>
+          </div>
 
           <div className="flex items-center gap-2">
             <button
@@ -342,13 +430,15 @@ export const GamesSection: React.FC = () => {
             >
               Tekshirish
             </button>
-            <button
-              onClick={handleNext}
-              className="flex items-center gap-1 px-4 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold"
-            >
-              <span>Keyingi gap</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
+            {isCorrect && (
+              <button
+                onClick={handleNext}
+                className="flex items-center gap-1 px-4 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold animate-pulse"
+              >
+                <span>{puzzleIdx + 1 >= totalPuzzles ? 'Natijani ko‘rish' : 'Keyingi gap'}</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -359,17 +449,23 @@ export const GamesSection: React.FC = () => {
   // GAME 3: ГЛАГОЛ ИЛИ СУЩЕСТВИТЕЛЬНОЕ?
   // ==========================================
   const Game3PartOfSpeech = () => {
+    const totalWords = 10;
     const [itemIdx, setItemIdx] = useState<number>(0);
     const [score, setScore] = useState<number>(0);
+    const [correctCount, setCorrectCount] = useState<number>(0);
     const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null);
+    const [isFinished, setIsFinished] = useState<boolean>(false);
 
-    const currentItem = PARTS_OF_SPEECH_ITEMS[itemIdx];
+    const currentItem = PARTS_OF_SPEECH_ITEMS[itemIdx % PARTS_OF_SPEECH_ITEMS.length];
 
     const handleClassify = (chosen: 'verb' | 'noun') => {
       if (feedback !== null) return;
       speak(currentItem.wordRu);
-      if (chosen === currentItem.type) {
+
+      const isRight = chosen === currentItem.type;
+      if (isRight) {
         setScore((prev) => prev + 10);
+        setCorrectCount((prev) => prev + 1);
         setFeedback('correct');
         addXP(10, `game3-${currentItem.id}`);
       } else {
@@ -378,24 +474,79 @@ export const GamesSection: React.FC = () => {
 
       setTimeout(() => {
         setFeedback(null);
-        setItemIdx((prev) => (prev + 1) % PARTS_OF_SPEECH_ITEMS.length);
+        if (itemIdx + 1 >= totalWords) {
+          setIsFinished(true);
+        } else {
+          setItemIdx((prev) => prev + 1);
+        }
       }, 700);
     };
+
+    const restartGame = () => {
+      setItemIdx(0);
+      setScore(0);
+      setCorrectCount(0);
+      setFeedback(null);
+      setIsFinished(false);
+    };
+
+    if (isFinished) {
+      return (
+        <div className="p-8 rounded-3xl bg-emerald-50 border-2 border-emerald-300 text-center space-y-4 max-w-lg mx-auto">
+          <Trophy className="w-14 h-14 text-emerald-600 mx-auto animate-bounce" />
+          <h3 className="text-2xl font-black text-emerald-950">
+            Raund yakunlandi!
+          </h3>
+          <p className="text-base text-slate-800">
+            Siz <strong>{totalWords}</strong> ta so‘zdan <strong>{correctCount}</strong> tasini to‘g‘ri aniqladingiz!
+          </p>
+          <p className="text-xl font-mono font-black text-emerald-700">
+            +{score} XP to‘plandi
+          </p>
+          <div className="flex justify-center gap-3 pt-2">
+            <button
+              onClick={restartGame}
+              className="px-6 py-2.5 rounded-xl text-xs font-bold bg-white text-slate-800 border border-slate-300 hover:bg-slate-50"
+            >
+              Qaytadan o‘ynash
+            </button>
+            <button
+              onClick={goToNextGame}
+              className="px-6 py-2.5 rounded-xl text-xs font-bold bg-purple-600 hover:bg-purple-500 text-white shadow-sm flex items-center gap-1.5"
+            >
+              <span>4-o‘yinga o‘tish</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      );
+    }
 
     return (
       <div className="space-y-6 text-center max-w-lg mx-auto">
         <div className="flex justify-between items-center text-xs text-slate-600">
-          <span className="font-semibold">So‘z {itemIdx + 1} / {PARTS_OF_SPEECH_ITEMS.length}</span>
+          <span className="font-bold bg-purple-100 text-purple-800 px-2.5 py-1 rounded-lg">
+            So‘z {itemIdx + 1} / {totalWords}
+          </span>
           <span className="font-mono text-amber-900 font-bold bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200">
-            Ball: {score}
+            Ball: {score} XP
           </span>
         </div>
 
         {/* Word Display */}
         <div className="p-8 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-2">
-          <h3 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-            {currentItem.wordRu}
-          </h3>
+          <div className="flex items-center justify-center gap-2">
+            <h3 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+              {currentItem.wordRu}
+            </h3>
+            <button
+              onClick={() => speak(currentItem.wordRu)}
+              className="p-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700"
+              title="Ovoz"
+            >
+              <Volume2 className="w-5 h-5" />
+            </button>
+          </div>
           <p className="text-sm font-semibold text-purple-700">
             «{currentItem.wordUz}»
           </p>
@@ -411,7 +562,7 @@ export const GamesSection: React.FC = () => {
         <div className="grid grid-cols-2 gap-4">
           <button
             onClick={() => handleClassify('verb')}
-            className="p-5 rounded-2xl bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-950 font-bold text-sm shadow-sm hover:scale-105 transition-all"
+            className="p-5 rounded-2xl bg-purple-50 hover:bg-purple-100 border-2 border-purple-200 text-purple-950 font-bold text-sm shadow-sm hover:scale-105 active:scale-95 transition-all"
           >
             <div className="text-xs text-purple-600 mb-1">Что делать?</div>
             <div>ГЛАГОЛ (Fe’l)</div>
@@ -419,7 +570,7 @@ export const GamesSection: React.FC = () => {
 
           <button
             onClick={() => handleClassify('noun')}
-            className="p-5 rounded-2xl bg-cyan-50 hover:bg-cyan-100 border border-cyan-200 text-cyan-950 font-bold text-sm shadow-sm hover:scale-105 transition-all"
+            className="p-5 rounded-2xl bg-cyan-50 hover:bg-cyan-100 border-2 border-cyan-200 text-cyan-950 font-bold text-sm shadow-sm hover:scale-105 active:scale-95 transition-all"
           >
             <div className="text-xs text-cyan-600 mb-1">Что?</div>
             <div>СУЩЕСТВИТЕЛЬНОЕ (Ot)</div>
@@ -433,8 +584,11 @@ export const GamesSection: React.FC = () => {
   // GAME 4: ПРОЦЕНТНЫЙ ВЫЗОВ (Percentage challenge)
   // ==========================================
   const Game4Percentage = () => {
+    const totalChallenges = PERCENTAGE_CHALLENGES.length;
     const [challengeIdx, setChallengeIdx] = useState<number>(0);
     const [selectedOpt, setSelectedOpt] = useState<string | null>(null);
+    const [score, setScore] = useState<number>(0);
+    const [isFinished, setIsFinished] = useState<boolean>(false);
 
     const currentChallenge = PERCENTAGE_CHALLENGES[challengeIdx] || PERCENTAGE_CHALLENGES[0];
     const isCorrect = selectedOpt === currentChallenge.correctText;
@@ -442,21 +596,78 @@ export const GamesSection: React.FC = () => {
     const handlePick = (opt: string) => {
       setSelectedOpt(opt);
       if (opt === currentChallenge.correctText) {
+        setScore((prev) => prev + 10);
         addXP(10, `game4-${currentChallenge.id}`);
         speak(opt);
       }
     };
 
     const handleNext = () => {
-      setSelectedOpt(null);
-      setChallengeIdx((prev) => (prev + 1) % PERCENTAGE_CHALLENGES.length);
+      if (challengeIdx + 1 >= totalChallenges) {
+        setIsFinished(true);
+      } else {
+        setSelectedOpt(null);
+        setChallengeIdx((prev) => prev + 1);
+      }
     };
+
+    const restartGame = () => {
+      setChallengeIdx(0);
+      setSelectedOpt(null);
+      setScore(0);
+      setIsFinished(false);
+    };
+
+    if (isFinished) {
+      return (
+        <div className="p-8 rounded-3xl bg-cyan-50 border-2 border-cyan-300 text-center space-y-4 max-w-xl mx-auto">
+          <Trophy className="w-14 h-14 text-cyan-600 mx-auto animate-bounce" />
+          <h3 className="text-2xl font-black text-cyan-950">
+            Foizlar sinovi muvaffaqiyatli yakunlandi!
+          </h3>
+          <p className="text-base text-slate-800">
+            To‘plangan ball: <strong>{score} XP</strong>
+          </p>
+          <div className="p-4 rounded-2xl bg-white border border-cyan-200 text-left text-xs space-y-2 text-slate-700">
+            <p className="font-bold text-cyan-900">Eslab qoling (Darslik qoidasi, 59-bet):</p>
+            <p>• 1, 21, 31, 41... ➔ <strong>процент</strong></p>
+            <p>• 2, 3, 4, 22, 34, 44... ➔ <strong>процента</strong></p>
+            <p>• 5–20, 25–30, 100... ➔ <strong>процентов</strong></p>
+            <p className="text-red-700 font-bold">• 11, 12, 13, 14 ➔ «процентов» (istisno!)</p>
+          </div>
+          <div className="flex justify-center gap-3 pt-2">
+            <button
+              onClick={restartGame}
+              className="px-6 py-2.5 rounded-xl text-xs font-bold bg-white text-slate-800 border border-slate-300 hover:bg-slate-50"
+            >
+              Qaytadan o‘ynash
+            </button>
+            <button
+              onClick={goToNextGame}
+              className="px-6 py-2.5 rounded-xl text-xs font-bold bg-purple-600 hover:bg-purple-500 text-white shadow-sm flex items-center gap-1.5"
+            >
+              <span>5-o‘yinga o‘tish</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      );
+    }
 
     return (
       <div className="space-y-6 max-w-lg mx-auto text-center">
+        <div className="flex justify-between items-center text-xs text-slate-600">
+          <span className="font-bold bg-purple-100 text-purple-800 px-2.5 py-1 rounded-lg">
+            Savol {challengeIdx + 1} / {totalChallenges}
+          </span>
+          <span className="font-mono text-amber-900 font-bold bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200">
+            Ball: {score} XP
+          </span>
+        </div>
+
         <div>
           <span className="text-xs text-purple-700 font-bold uppercase tracking-wider">
-            Qaysi shakl to‘g‘ri?
+            Qaysi foiz shakli to‘g‘ri?
           </span>
           <div className="text-5xl font-black text-cyan-600 font-mono mt-2">
             {currentChallenge.number} %
@@ -492,7 +703,7 @@ export const GamesSection: React.FC = () => {
 
         {/* Rule Hint & Status */}
         {selectedOpt !== null && (
-          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-700 space-y-1">
+          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-700 space-y-1 text-left">
             <p className={`font-bold ${isCorrect ? 'text-emerald-700' : 'text-red-700'}`}>
               {isCorrect ? '✓ To‘g‘ri javob! (+10 XP)' : '✕ Noto‘g‘ri variant!'}
             </p>
@@ -501,14 +712,16 @@ export const GamesSection: React.FC = () => {
           </div>
         )}
 
-        <div className="flex justify-end pt-2">
-          <button
-            onClick={handleNext}
-            className="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold shadow-sm"
-          >
-            Keyingi son ➔
-          </button>
-        </div>
+        {selectedOpt !== null && (
+          <div className="flex justify-end pt-2">
+            <button
+              onClick={handleNext}
+              className="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold shadow-sm"
+            >
+              {challengeIdx + 1 >= totalChallenges ? 'Natijani ko‘rish' : 'Keyingi son ➔'}
+            </button>
+          </div>
+        )}
       </div>
     );
   };
@@ -517,9 +730,12 @@ export const GamesSection: React.FC = () => {
   // GAME 5: ПАДЕЖНЫЙ ТРЕНАЖЁР (Case trainer)
   // ==========================================
   const Game5CaseTrainer = () => {
+    const totalItems = CASE_TRAINER_ITEMS.length;
     const [itemIdx, setItemIdx] = useState<number>(0);
     const [selectedOpt, setSelectedOpt] = useState<string | null>(null);
     const [isDone, setIsDone] = useState<boolean>(false);
+    const [score, setScore] = useState<number>(0);
+    const [isFinished, setIsFinished] = useState<boolean>(false);
 
     const currentItem = CASE_TRAINER_ITEMS[itemIdx] || CASE_TRAINER_ITEMS[0];
 
@@ -527,19 +743,73 @@ export const GamesSection: React.FC = () => {
       setSelectedOpt(opt);
       setIsDone(true);
       if (opt === currentItem.correctAnswer) {
-        addXP(10, `game5-${currentItem.id}`, true);
+        setScore((prev) => prev + 15);
+        addXP(15, `game5-${currentItem.id}`, true);
         speak(currentItem.sentenceWithBlankRu.replace('________', opt));
       }
     };
 
     const handleNext = () => {
+      if (itemIdx + 1 >= totalItems) {
+        setIsFinished(true);
+      } else {
+        setSelectedOpt(null);
+        setIsDone(false);
+        setItemIdx((prev) => prev + 1);
+      }
+    };
+
+    const restartGame = () => {
+      setItemIdx(0);
       setSelectedOpt(null);
       setIsDone(false);
-      setItemIdx((prev) => (prev + 1) % CASE_TRAINER_ITEMS.length);
+      setScore(0);
+      setIsFinished(false);
     };
+
+    if (isFinished) {
+      return (
+        <div className="p-8 rounded-3xl bg-purple-50 border-2 border-purple-300 text-center space-y-4 max-w-xl mx-auto">
+          <Trophy className="w-14 h-14 text-purple-600 mx-auto animate-bounce" />
+          <h3 className="text-2xl font-black text-purple-950">
+            Kelishiklar treynajori yakunlandi!
+          </h3>
+          <p className="text-sm text-slate-700">
+            Rus tilidagi 6 ta kelishik qo‘shimchalarini gap ichida to‘g‘ri qo‘llash ko‘nikmangiz mustahkamlandi.
+          </p>
+          <p className="text-xl font-mono font-black text-purple-700">
+            +{score} XP to‘plandi
+          </p>
+          <div className="flex justify-center gap-3 pt-2">
+            <button
+              onClick={restartGame}
+              className="px-6 py-2.5 rounded-xl text-xs font-bold bg-white text-slate-800 border border-slate-300 hover:bg-slate-50"
+            >
+              Qaytadan o‘ynash
+            </button>
+            <button
+              onClick={goToNextGame}
+              className="px-6 py-2.5 rounded-xl text-xs font-bold bg-purple-600 hover:bg-purple-500 text-white shadow-sm flex items-center gap-1.5"
+            >
+              <span>6-o‘yinga o‘tish</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      );
+    }
 
     return (
       <div className="space-y-6 max-w-xl mx-auto text-left">
+        <div className="flex justify-between items-center text-xs text-slate-600">
+          <span className="font-bold bg-purple-100 text-purple-800 px-2.5 py-1 rounded-lg">
+            Topshiriq {itemIdx + 1} / {totalItems}
+          </span>
+          <span className="font-mono text-amber-900 font-bold bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200">
+            Ball: {score} XP
+          </span>
+        </div>
+
         <div className="p-5 rounded-2xl bg-purple-50/70 border border-purple-200">
           <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-800 uppercase">
             {currentItem.targetCaseName}
@@ -586,14 +856,16 @@ export const GamesSection: React.FC = () => {
           </div>
         )}
 
-        <div className="flex justify-end pt-2">
-          <button
-            onClick={handleNext}
-            className="px-5 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold shadow-sm"
-          >
-            Keyingi gap ➔
-          </button>
-        </div>
+        {isDone && (
+          <div className="flex justify-end pt-2">
+            <button
+              onClick={handleNext}
+              className="px-5 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold shadow-sm"
+            >
+              {itemIdx + 1 >= totalItems ? 'Natijani ko‘rish' : 'Keyingi gap ➔'}
+            </button>
+          </div>
+        )}
       </div>
     );
   };
@@ -602,9 +874,12 @@ export const GamesSection: React.FC = () => {
   // GAME 6: ПОСЛУШАЙ И ОТВЕТЬ (Audio prompt)
   // ==========================================
   const Game6AudioQuiz = () => {
+    const totalItems = AUDIO_GAME_ITEMS.length;
     const [itemIdx, setItemIdx] = useState<number>(0);
     const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
     const [isDone, setIsDone] = useState<boolean>(false);
+    const [score, setScore] = useState<number>(0);
+    const [isFinished, setIsFinished] = useState<boolean>(false);
 
     const currentItem = AUDIO_GAME_ITEMS[itemIdx] || AUDIO_GAME_ITEMS[0];
 
@@ -612,18 +887,72 @@ export const GamesSection: React.FC = () => {
       setSelectedIdx(idx);
       setIsDone(true);
       if (idx === currentItem.correctIndex) {
-        addXP(15, `game6-${currentItem.id}`, true);
+        setScore((prev) => prev + 20);
+        addXP(20, `game6-${currentItem.id}`, true);
       }
     };
 
     const handleNext = () => {
+      if (itemIdx + 1 >= totalItems) {
+        setIsFinished(true);
+      } else {
+        setSelectedIdx(null);
+        setIsDone(false);
+        setItemIdx((prev) => prev + 1);
+      }
+    };
+
+    const restartGame = () => {
+      setItemIdx(0);
       setSelectedIdx(null);
       setIsDone(false);
-      setItemIdx((prev) => (prev + 1) % AUDIO_GAME_ITEMS.length);
+      setScore(0);
+      setIsFinished(false);
     };
+
+    if (isFinished) {
+      return (
+        <div className="p-8 rounded-3xl bg-cyan-50 border-2 border-cyan-300 text-center space-y-4 max-w-xl mx-auto">
+          <Trophy className="w-14 h-14 text-cyan-600 mx-auto animate-bounce" />
+          <h3 className="text-2xl font-black text-cyan-950">
+            Audio-viktorina a’lo darajada yakunlandi!
+          </h3>
+          <p className="text-sm text-slate-700">
+            Ruscha jumlalarni eshitib, ularning mohiyatini to‘liq tushunishni o‘rgandingiz!
+          </p>
+          <p className="text-xl font-mono font-black text-cyan-700">
+            +{score} XP to‘plandi
+          </p>
+          <div className="flex justify-center gap-3 pt-2">
+            <button
+              onClick={restartGame}
+              className="px-6 py-2.5 rounded-xl text-xs font-bold bg-white text-slate-800 border border-slate-300 hover:bg-slate-50"
+            >
+              Qaytadan o‘ynash
+            </button>
+            <button
+              onClick={goToNextGame}
+              className="px-6 py-2.5 rounded-xl text-xs font-bold bg-purple-600 hover:bg-purple-500 text-white shadow-sm flex items-center gap-1.5"
+            >
+              <span>7-o‘yinga o‘tish (60s)</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      );
+    }
 
     return (
       <div className="space-y-6 max-w-xl mx-auto text-left">
+        <div className="flex justify-between items-center text-xs text-slate-600">
+          <span className="font-bold bg-purple-100 text-purple-800 px-2.5 py-1 rounded-lg">
+            Audio-savol {itemIdx + 1} / {totalItems}
+          </span>
+          <span className="font-mono text-amber-900 font-bold bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200">
+            Ball: {score} XP
+          </span>
+        </div>
+
         <div className="p-6 rounded-3xl bg-cyan-50/70 border border-cyan-200 text-center space-y-3">
           <button
             onClick={() => speak(currentItem.audioPromptRu)}
@@ -675,14 +1004,16 @@ export const GamesSection: React.FC = () => {
           </div>
         )}
 
-        <div className="flex justify-end pt-2">
-          <button
-            onClick={handleNext}
-            className="px-5 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold"
-          >
-            Keyingi savol ➔
-          </button>
-        </div>
+        {isDone && (
+          <div className="flex justify-end pt-2">
+            <button
+              onClick={handleNext}
+              className="px-5 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold"
+            >
+              {itemIdx + 1 >= totalItems ? 'Natijani ko‘rish' : 'Keyingi savol ➔'}
+            </button>
+          </div>
+        )}
       </div>
     );
   };
@@ -695,7 +1026,10 @@ export const GamesSection: React.FC = () => {
     const [isActive, setIsActive] = useState<boolean>(false);
     const [qIdx, setQIdx] = useState<number>(0);
     const [score, setScore] = useState<number>(0);
+    const [correctCount, setCorrectCount] = useState<number>(0);
+    const [wrongCount, setWrongCount] = useState<number>(0);
     const [gameOver, setGameOver] = useState<boolean>(false);
+    const [feedbackFlash, setFeedbackFlash] = useState<'correct' | 'wrong' | null>(null);
 
     useEffect(() => {
       if (!isActive) return;
@@ -722,28 +1056,42 @@ export const GamesSection: React.FC = () => {
     const startBattle = () => {
       setTimeLeft(60);
       setScore(0);
+      setCorrectCount(0);
+      setWrongCount(0);
       setQIdx(0);
       setGameOver(false);
       setIsActive(true);
+      setFeedbackFlash(null);
     };
 
     const currentQ = BATTLE_QUESTIONS[qIdx % BATTLE_QUESTIONS.length];
 
     const handleAnswer = (optionIdx: number) => {
-      if (!isActive) return;
-      if (optionIdx === currentQ.correctIndex) {
+      if (!isActive || feedbackFlash !== null) return;
+
+      const isRight = optionIdx === currentQ.correctIndex;
+      if (isRight) {
         setScore((prev) => prev + currentQ.points);
+        setCorrectCount((prev) => prev + 1);
+        setFeedbackFlash('correct');
+      } else {
+        setWrongCount((prev) => prev + 1);
+        setFeedbackFlash('wrong');
       }
-      setQIdx((prev) => prev + 1);
+
+      setTimeout(() => {
+        setFeedbackFlash(null);
+        setQIdx((prev) => prev + 1);
+      }, 450);
     };
 
     return (
       <div className="space-y-6 max-w-xl mx-auto text-center">
         {!isActive && !gameOver ? (
           <div className="p-8 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-4">
-            <Trophy className="w-12 h-12 text-amber-500 mx-auto" />
+            <Trophy className="w-14 h-14 text-amber-500 mx-auto" />
             <h3 className="text-2xl font-black text-slate-900">60 Soniyalik Bilimlar Jangi</h3>
-            <p className="text-xs text-slate-600 max-w-md mx-auto leading-relaxed">
+            <p className="text-xs sm:text-sm text-slate-600 max-w-md mx-auto leading-relaxed">
               1 daqiqa ichida rus tili qoidalari va so‘zlariga doir imkon qadar ko‘proq to‘g‘ri javob bering va maksimal XP to‘plang!
             </p>
             <button
@@ -754,32 +1102,63 @@ export const GamesSection: React.FC = () => {
             </button>
           </div>
         ) : gameOver ? (
-          <div className="p-8 rounded-3xl bg-emerald-50 border border-emerald-200 text-center space-y-4">
+          <div className="p-8 rounded-3xl bg-emerald-50 border-2 border-emerald-300 text-center space-y-4">
             <Trophy className="w-14 h-14 text-emerald-600 mx-auto animate-bounce" />
             <h3 className="text-2xl font-extrabold text-slate-900">Vaqt tugadi! Ajoyib natija!</h3>
-            <p className="text-xl font-mono font-bold text-emerald-700">
-              To‘plangan ball: {score} XP
-            </p>
-            <button
-              onClick={startBattle}
-              className="px-6 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs"
-            >
-              Qaytadan o‘ynash
-            </button>
+            <div className="grid grid-cols-3 gap-3 max-w-xs mx-auto py-2">
+              <div className="p-3 rounded-2xl bg-white border border-emerald-200">
+                <span className="text-xs text-slate-500">To‘g‘ri</span>
+                <p className="text-lg font-black text-emerald-700">{correctCount}</p>
+              </div>
+              <div className="p-3 rounded-2xl bg-white border border-emerald-200">
+                <span className="text-xs text-slate-500">Xato</span>
+                <p className="text-lg font-black text-red-600">{wrongCount}</p>
+              </div>
+              <div className="p-3 rounded-2xl bg-white border border-emerald-200">
+                <span className="text-xs text-slate-500">Jami ball</span>
+                <p className="text-lg font-black text-purple-700">+{score} XP</p>
+              </div>
+            </div>
+            <div className="flex justify-center gap-3 pt-2">
+              <button
+                onClick={startBattle}
+                className="px-6 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs"
+              >
+                Qaytadan o‘ynash
+              </button>
+              <button
+                onClick={() => setActiveGameId(1)}
+                className="px-6 py-2.5 rounded-xl bg-white text-slate-800 border border-slate-300 hover:bg-slate-50 text-xs font-bold"
+              >
+                1-o‘yinga qaytish
+              </button>
+            </div>
           </div>
         ) : (
           <div className="space-y-5 text-left">
             <div className="flex justify-between items-center p-3 rounded-2xl bg-slate-50 border border-slate-200">
               <div className="flex items-center gap-1.5 text-slate-800 text-xs font-mono font-bold">
-                <Clock className="w-4 h-4 text-purple-600" />
-                <span>00:{timeLeft < 10 ? `0${timeLeft}` : timeLeft}</span>
+                <Clock className="w-4 h-4 text-purple-600 animate-spin" />
+                <span className={timeLeft <= 10 ? 'text-red-600 font-black' : ''}>
+                  00:{timeLeft < 10 ? `0${timeLeft}` : timeLeft}
+                </span>
               </div>
-              <div className="text-amber-900 text-xs font-mono font-bold">
-                Ball: {score} XP
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-emerald-700">✓ {correctCount}</span>
+                <span className="text-xs font-semibold text-red-600">✕ {wrongCount}</span>
+                <span className="text-amber-900 text-xs font-mono font-bold bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                  {score} XP
+                </span>
               </div>
             </div>
 
-            <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2">
+            <div className={`p-5 rounded-2xl bg-white border shadow-sm space-y-2 transition-all ${
+              feedbackFlash === 'correct'
+                ? 'border-emerald-500 bg-emerald-50/50'
+                : feedbackFlash === 'wrong'
+                ? 'border-red-500 bg-red-50/50'
+                : 'border-slate-200'
+            }`}>
               <h4 className="text-base font-bold text-slate-900">
                 {currentQ.questionRu}
               </h4>
@@ -793,7 +1172,8 @@ export const GamesSection: React.FC = () => {
                 <button
                   key={idx}
                   onClick={() => handleAnswer(idx)}
-                  className="p-3.5 rounded-xl bg-slate-50 hover:bg-purple-600 hover:text-white text-slate-800 text-xs sm:text-sm font-semibold transition-all border border-slate-200 text-left"
+                  disabled={feedbackFlash !== null}
+                  className="p-3.5 rounded-xl bg-slate-50 hover:bg-purple-600 hover:text-white text-slate-800 text-xs sm:text-sm font-semibold transition-all border border-slate-200 text-left active:scale-98"
                 >
                   {opt}
                 </button>

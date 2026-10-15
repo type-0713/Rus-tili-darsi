@@ -29,14 +29,14 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { id: 'home', labelRu: 'Главная 3D', labelUz: 'Bosh sahifa', icon: Sparkles },
-  { id: 'lesson', labelRu: 'Урок (11 шагов)', labelUz: 'Asosiy dars', icon: BookOpen },
-  { id: 'textbook', labelRu: 'Учебник (стр. 54-59)', labelUz: 'Darslik mashqlari', icon: FileText, badge: 'Фото' },
-  { id: 'grammar', labelRu: 'Грамматика A–K', labelUz: 'Grammatika', icon: Library, badge: 'A–K' },
+  { id: 'lesson', labelRu: 'Урок (11)', labelUz: 'Asosiy dars', icon: BookOpen },
+  { id: 'textbook', labelRu: 'Учебник (54–59)', labelUz: 'Darslik', icon: FileText, badge: '54–59' },
+  { id: 'grammar', labelRu: 'Грамматика', labelUz: 'Qoidalar', icon: Library, badge: 'A–K' },
   { id: 'dictionary', labelRu: 'Словарь', labelUz: 'Lug‘at', icon: BookA, badge: '27+' },
   { id: 'pronunciation', labelRu: 'Произношение', labelUz: 'Talaffuz', icon: Mic },
   { id: 'listening', labelRu: 'Аудирование', labelUz: 'Tinglash', icon: Headphones, badge: '15' },
-  { id: 'games', labelRu: 'Игры (7)', labelUz: 'O‘yinlar', icon: Gamepad2, badge: '7' },
-  { id: 'quiz', labelRu: 'Тест', labelUz: 'Test', icon: FileCheck2 },
+  { id: 'games', labelRu: 'Игры', labelUz: 'O‘yinlar', icon: Gamepad2, badge: '7' },
+  { id: 'quiz', labelRu: 'Тест', labelUz: 'Sinov', icon: FileCheck2 },
   { id: 'teacher', labelRu: 'Учитель', labelUz: 'O‘qituvchi', icon: Presentation },
   { id: 'summary', labelRu: 'Итоги', labelUz: 'Xulosa', icon: GraduationCap }
 ];
@@ -49,7 +49,7 @@ export const Navbar: React.FC = () => {
   return (
     <>
       <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-b border-slate-200/90 shadow-sm transition-colors">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3">
           {/* Logo */}
           <button
             onClick={() => {
@@ -67,17 +67,17 @@ export const Navbar: React.FC = () => {
                   КНИЖНЫЙ МИР 3D
                 </span>
                 <span className="hidden sm:inline-block text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-purple-100 text-purple-800 border border-purple-200">
-                  AI ACADEMY
+                  ACADEMY
                 </span>
               </div>
-              <p className="text-[11px] text-slate-600 font-medium hidden md:block">
-                Interaktiv rus tili akademiyasi
+              <p className="text-[11px] text-slate-500 font-medium hidden md:block">
+                Interaktiv rus tili ta’lim platformasi
               </p>
             </div>
           </button>
 
-          {/* Desktop Nav links */}
-          <nav className="hidden xl:flex items-center gap-1">
+          {/* Desktop Nav links (Visible on large screens) */}
+          <nav className="hidden 2xl:flex items-center gap-1">
             {NAV_ITEMS.map((item) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
@@ -85,10 +85,10 @@ export const Navbar: React.FC = () => {
                 <button
                   key={item.id}
                   onClick={() => setActiveTab(item.id)}
-                  className={`relative flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+                  className={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
                     isActive
-                      ? 'bg-purple-50 text-purple-900 border border-purple-200 shadow-sm'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80'
+                      ? 'bg-purple-50 text-purple-900 border border-purple-300 shadow-sm'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                   }`}
                 >
                   <Icon className="w-3.5 h-3.5 text-purple-600 flex-shrink-0" />
@@ -131,17 +131,57 @@ export const Navbar: React.FC = () => {
             {/* Mobile menu hamburger toggle */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="xl:hidden p-2 rounded-2xl bg-slate-100 text-slate-700 hover:text-slate-900 border border-slate-200"
+              className="2xl:hidden p-2 rounded-2xl bg-slate-100 text-slate-700 hover:text-slate-900 border border-slate-200"
+              title="Barcha bo‘limlar"
             >
               {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
           </div>
         </div>
 
-        {/* Mobile Navigation Dropdown */}
+        {/* Global Horizontal Quick-Pills Navigation (Clean, responsive across all devices) */}
+        <div className="border-t border-slate-100 bg-white/90 px-4 sm:px-6 lg:px-8 py-2 overflow-x-auto scrollbar-thin">
+          <div className="max-w-7xl mx-auto flex items-center gap-1.5 min-w-max">
+            {NAV_ITEMS.map((item) => {
+              const Icon = item.icon;
+              const isActive = activeTab === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => {
+                    setActiveTab(item.id);
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                    isActive
+                      ? 'bg-purple-600 text-white shadow-sm'
+                      : 'bg-slate-50 hover:bg-purple-50 text-slate-700 hover:text-purple-900 border border-slate-200/80'
+                  }`}
+                >
+                  <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-white' : 'text-purple-600'}`} />
+                  <span>{item.labelRu}</span>
+                  {item.badge && (
+                    <span
+                      className={`text-[9px] px-1 py-0.2 rounded-md font-mono font-bold ${
+                        isActive ? 'bg-purple-700 text-purple-100' : 'bg-purple-100 text-purple-800'
+                      }`}
+                    >
+                      {item.badge}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Mobile Navigation Dropdown Menu (Full Grid) */}
         {isMobileMenuOpen && (
-          <div className="xl:hidden border-t border-slate-200 bg-white px-4 py-3 space-y-1 shadow-lg">
-            <div className="grid grid-cols-2 gap-2 pb-2">
+          <div className="2xl:hidden border-t border-slate-200 bg-white px-4 py-4 space-y-2 shadow-xl animate-fadeIn">
+            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">
+              Akademiya Bo‘limlari:
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {NAV_ITEMS.map((item) => {
                 const Icon = item.icon;
                 const isActive = activeTab === item.id;
@@ -152,16 +192,16 @@ export const Navbar: React.FC = () => {
                       setActiveTab(item.id);
                       setIsMobileMenuOpen(false);
                     }}
-                    className={`flex items-center gap-2 p-2.5 rounded-2xl text-xs font-semibold text-left transition-all ${
+                    className={`flex items-center gap-2 p-3 rounded-2xl text-xs font-semibold text-left transition-all ${
                       isActive
-                        ? 'bg-purple-50 text-purple-900 border border-purple-300'
-                        : 'text-slate-700 hover:bg-slate-100'
+                        ? 'bg-purple-50 text-purple-900 border-2 border-purple-500 shadow-sm'
+                        : 'text-slate-800 hover:bg-slate-50 border border-slate-200'
                     }`}
                   >
                     <Icon className="w-4 h-4 text-purple-600 flex-shrink-0" />
                     <div className="truncate">
                       <p className="truncate font-bold">{item.labelRu}</p>
-                      <p className="text-[10px] text-slate-600">{item.labelUz}</p>
+                      <p className="text-[10px] text-slate-500">{item.labelUz}</p>
                     </div>
                   </button>
                 );

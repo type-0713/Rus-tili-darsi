@@ -1,6 +1,6 @@
 import React, { useRef, useMemo, useState, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Float, OrbitControls, Text } from '@react-three/drei';
+import { Float, OrbitControls, Html } from '@react-three/drei';
 import * as THREE from 'three';
 import { BookFallback } from './BookFallback';
 
@@ -25,10 +25,10 @@ const Bookshelf: React.FC = () => {
 
   return (
     <group position={[0, -0.2, -1]}>
-      {/* Wooden / metallic shelf plank */}
+      {/* Shelf plank */}
       <mesh position={[0, -1.85, -2]}>
         <boxGeometry args={[7, 0.15, 1.2]} />
-        <meshStandardMaterial color="#334155" roughness={0.3} metalness={0.4} />
+        <meshStandardMaterial color="#64748b" roughness={0.3} metalness={0.2} />
       </mesh>
 
       {/* Books on the shelf */}
@@ -42,22 +42,22 @@ const Bookshelf: React.FC = () => {
   );
 };
 
-// 3D Floating Russian Cyrillic Letters
+// 3D Floating Russian Cyrillic Letters using Html overlay (Zero network font dependency!)
 const FloatingLetters: React.FC = () => {
   const letters = ['А', 'Б', 'В', 'Я', 'Ж', 'Ф', 'Ы', 'Э', 'Ю', 'Д', 'П'];
   const letterPositions = useMemo(() => {
     return letters.map((char, index) => {
       const angle = (index / letters.length) * Math.PI * 2;
-      const radius = 2.3 + (index % 3) * 0.4;
+      const radius = 2.4 + (index % 3) * 0.3;
       return {
         char,
         pos: [
           Math.cos(angle) * radius,
-          Math.sin(angle) * 1.1 + 0.3,
-          (Math.sin(angle * 2) * 0.8)
+          Math.sin(angle) * 1.0 + 0.3,
+          (Math.sin(angle * 2) * 0.7)
         ] as [number, number, number],
         speed: 1.2 + (index % 3) * 0.4,
-        color: index % 2 === 0 ? '#6d28d9' : '#0369a1'
+        color: index % 2 === 0 ? 'text-purple-700' : 'text-cyan-700'
       };
     });
   }, []);
@@ -68,106 +68,99 @@ const FloatingLetters: React.FC = () => {
         <Float
           key={idx}
           speed={item.speed}
-          rotationIntensity={0.8}
-          floatIntensity={1.2}
+          rotationIntensity={0.6}
+          floatIntensity={1.0}
         >
-          <Text
-            position={item.pos}
-            fontSize={0.36}
-            color={item.color}
-            anchorX="center"
-            anchorY="middle"
-          >
-            {item.char}
-            <meshStandardMaterial
-              color={item.color}
-              emissive={item.color}
-              emissiveIntensity={0.3}
-            />
-          </Text>
+          <group position={item.pos}>
+            <Html center distanceFactor={8} pointerEvents="none">
+              <span className={`font-serif font-black text-2xl select-none ${item.color} drop-shadow-sm`}>
+                {item.char}
+              </span>
+            </Html>
+          </group>
         </Float>
       ))}
     </group>
   );
 };
 
-// 3D Open Book Mesh with White Pages
+// 3D Open Book Model
 const OpenBookModel: React.FC = () => {
   const groupRef = useRef<THREE.Group>(null);
 
   useFrame((state) => {
     if (groupRef.current) {
       const t = state.clock.getElapsedTime();
-      groupRef.current.position.y = Math.sin(t * 1.1) * 0.06;
-      groupRef.current.rotation.y = Math.sin(t * 0.4) * 0.12 + (state.pointer.x * 0.2);
-      groupRef.current.rotation.x = 0.25 - (state.pointer.y * 0.15);
+      groupRef.current.position.y = Math.sin(t * 1.1) * 0.05;
+      groupRef.current.rotation.y = Math.sin(t * 0.4) * 0.1 + (state.pointer.x * 0.15);
+      groupRef.current.rotation.x = 0.25 - (state.pointer.y * 0.12);
     }
   });
 
   return (
     <group ref={groupRef} position={[0, 0, 0]} rotation={[0.25, 0, 0]}>
-      {/* Book Cover / Base (Royal Indigo Leather) */}
+      {/* Book Cover Base */}
       <mesh position={[0, -0.08, 0]}>
         <boxGeometry args={[3.2, 0.08, 2.2]} />
-        <meshStandardMaterial color="#312e81" roughness={0.3} metalness={0.3} />
+        <meshStandardMaterial color="#4338ca" roughness={0.3} metalness={0.3} />
       </mesh>
 
       {/* Book Spine Center */}
       <mesh position={[0, 0, 0]} rotation={[Math.PI / 2, 0, 0]}>
         <cylinderGeometry args={[0.08, 0.08, 2.2, 16]} />
-        <meshStandardMaterial color="#4f46e5" roughness={0.2} metalness={0.5} />
+        <meshStandardMaterial color="#6366f1" roughness={0.2} metalness={0.4} />
       </mesh>
 
       {/* Left Page Wing (Clean White Paper) */}
       <group position={[-0.75, 0.05, 0]} rotation={[0, 0, -0.07]}>
         <mesh position={[0, 0, 0]}>
           <boxGeometry args={[1.4, 0.06, 2.1]} />
-          <meshStandardMaterial color="#f8fafc" roughness={0.4} />
+          <meshStandardMaterial color="#ffffff" roughness={0.4} />
         </mesh>
-        {/* Left Page Top Texture Paper */}
-        <mesh position={[0, 0.035, 0]}>
-          <planeGeometry args={[1.3, 2.0]} />
-          <meshStandardMaterial color="#ffffff" roughness={0.5} />
-        </mesh>
-        <Text
-          position={[-0.1, 0.04, 0.5]}
-          rotation={[-Math.PI / 2, 0, 0]}
-          fontSize={0.105}
-          color="#312e81"
-          maxWidth={1.1}
-          lineHeight={1.4}
-        >
-          {`КНИЖНЫЙ МИР\nЧтение развивает\nпамять и речь.\n15 минут в день\nтворят чудеса.`}
-        </Text>
+        {/* Left Page Text Overlay */}
+        <group position={[0, 0.04, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <Html center distanceFactor={7} pointerEvents="none">
+            <div className="w-28 text-left p-1 select-none pointer-events-none">
+              <p className="font-bold text-[9px] text-purple-900 uppercase tracking-wider mb-1">
+                КНИЖНЫЙ МИР
+              </p>
+              <p className="text-[8px] text-slate-700 leading-tight">
+                Чтение развивает память, речь и воображение.
+              </p>
+              <div className="w-full h-0.5 bg-purple-200 my-1 rounded" />
+              <p className="text-[7px] text-slate-500 font-mono">Стр. 54</p>
+            </div>
+          </Html>
+        </group>
       </group>
 
       {/* Right Page Wing (Clean White Paper) */}
       <group position={[0.75, 0.05, 0]} rotation={[0, 0, 0.07]}>
         <mesh position={[0, 0, 0]}>
           <boxGeometry args={[1.4, 0.06, 2.1]} />
-          <meshStandardMaterial color="#f8fafc" roughness={0.4} />
+          <meshStandardMaterial color="#ffffff" roughness={0.4} />
         </mesh>
-        {/* Right Page Top Texture Paper */}
-        <mesh position={[0, 0.035, 0]}>
-          <planeGeometry args={[1.3, 2.0]} />
-          <meshStandardMaterial color="#ffffff" roughness={0.5} />
-        </mesh>
-        <Text
-          position={[0.1, 0.04, 0.5]}
-          rotation={[-Math.PI / 2, 0, 0]}
-          fontSize={0.105}
-          color="#0369a1"
-          maxWidth={1.1}
-          lineHeight={1.4}
-        >
-          {`AI ACADEMY 3D\nПогрузитесь\nв изучение\nрусского языка\nлегко и красиво!`}
-        </Text>
+        {/* Right Page Text Overlay */}
+        <group position={[0, 0.04, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <Html center distanceFactor={7} pointerEvents="none">
+            <div className="w-28 text-left p-1 select-none pointer-events-none">
+              <p className="font-bold text-[9px] text-cyan-900 uppercase tracking-wider mb-1">
+                AI ACADEMY 3D
+              </p>
+              <p className="text-[8px] text-slate-700 leading-tight">
+                Погрузитесь в изучение русского языка легко!
+              </p>
+              <div className="w-full h-0.5 bg-cyan-200 my-1 rounded" />
+              <p className="text-[7px] text-slate-500 font-mono text-right">Стр. 59</p>
+            </div>
+          </Html>
+        </group>
       </group>
 
       {/* Glowing Book Light Marker / Ribbon */}
-      <mesh position={[0, 0.06, 0.4]} rotation={[0, 0, 0]}>
+      <mesh position={[0, 0.06, 0.4]}>
         <boxGeometry args={[0.06, 0.03, 1.4]} />
-        <meshStandardMaterial color="#0284c7" emissive="#0284c7" emissiveIntensity={0.5} />
+        <meshStandardMaterial color="#06b6d4" emissive="#06b6d4" emissiveIntensity={0.6} />
       </mesh>
     </group>
   );
@@ -207,19 +200,15 @@ export const BookScene: React.FC = () => {
         onError={() => setHasError(true)}
         gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
       >
-        {/* Ambient & Directional Lights */}
         <ambientLight intensity={1.1} />
         <directionalLight position={[4, 6, 4]} intensity={1.5} color="#ffffff" />
         <pointLight position={[-3, 2, 2]} intensity={1.5} color="#7c3aed" distance={8} />
         <pointLight position={[3, 1, 2]} intensity={1.5} color="#0284c7" distance={8} />
-        <pointLight position={[0, 3, -1]} intensity={1.2} color="#f472b6" distance={6} />
 
-        {/* 3D Scene Elements */}
         <Bookshelf />
         <OpenBookModel />
         <FloatingLetters />
 
-        {/* Orbit controls */}
         <OrbitControls
           enableZoom={false}
           enablePan={false}
