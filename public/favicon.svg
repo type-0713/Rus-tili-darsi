@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="grad-book" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7c3aed" />
+      <stop offset="100%" stop-color="#4f46e5" />
+    </linearGradient>
+    <linearGradient id="grad-accent" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#06b6d4" />
+      <stop offset="100%" stop-color="#3b82f6" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.25" flood-color="#4f46e5" />
+    </filter>
+  </defs>
+
+  <!-- Background rounded squircle -->
+  <rect width="64" height="64" rx="16" fill="url(#grad-book)" />
+
+  <!-- Book Spine & Pages -->
+  <g filter="url(#shadow)">
+    <!-- Left Page -->
+    <path d="M14 20C18 19 26 20 30 23V46C26 43 18 42 14 43V20Z" fill="#ffffff" fill-opacity="0.95" />
+    <path d="M16 25C19.5 24.3 24 25 27 27" stroke="#9333ea" stroke-width="2" stroke-linecap="round" />
+    <path d="M16 30C19.5 29.3 24 30 27 32" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round" />
+    <path d="M16 35C19.5 34.3 24 35 27 37" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round" />
+
+    <!-- Right Page -->
+    <path d="M50 20C46 19 38 20 34 23V46C38 43 46 42 50 43V20Z" fill="#ffffff" fill-opacity="0.95" />
+    <path d="M48 25C44.5 24.3 40 25 37 27" stroke="#06b6d4" stroke-width="2" stroke-linecap="round" />
+    <path d="M48 30C44.5 29.3 40 30 37 32" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round" />
+    <path d="M48 35C44.5 34.3 40 35 37 37" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round" />
+
+    <!-- Center Spine Line -->
+    <line x1="32" y1="23" x2="32" y2="46" stroke="#c084fc" stroke-width="2" stroke-linecap="round" />
+  </g>
+
+  <!-- Sparkle Star top right -->
+  <path d="M46 10L47.5 14.5L52 16L47.5 17.5L46 22L44.5 17.5L40 16L44.5 14.5L46 10Z" fill="#38bdf8" />
+  <circle cx="20" cy="14" r="2" fill="#facc15" />
+</svg>
